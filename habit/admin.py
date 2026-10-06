@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models import Habits, Cheking
 
-# Register your models here.
+admin.site.register(Habits)
+admin.site.register(Cheking)
