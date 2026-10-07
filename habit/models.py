@@ -21,7 +21,8 @@ class Habits (models.Model):
         on_delete=models.CASCADE,
     )
     date = models.DateTimeField()
-    day_of_week = models.PositiveSmallIntegerField(choices=DAYS_OF_WEEK, default=0)
+    day_of_week = models.PositiveSmallIntegerField(
+        choices=DAYS_OF_WEEK, default=0)
 
     class Meta:
         constraints = [
