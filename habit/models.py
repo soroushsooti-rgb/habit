@@ -15,7 +15,6 @@ DAYS_OF_WEEK = (
 
 
 class Habits (models.Model):
-    id = models.AutoField(primary_key=True, editable=False)
     name = models.CharField(max_length=255)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -35,7 +34,6 @@ class Habits (models.Model):
 
 
 class Cheking (models.Model):
-    id = models.AutoField(primary_key=True, editable=False)
     habit = models.ForeignKey(
         Habits, on_delete=models.CASCADE
     )
