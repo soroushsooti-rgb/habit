@@ -21,8 +21,8 @@ class Habits (models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    event_date = models.DateTimeField()
-    days = models.PositiveSmallIntegerField(choices=DAYS_OF_WEEK, default=0)
+    date = models.DateTimeField()
+    day_of_week = models.PositiveSmallIntegerField(choices=DAYS_OF_WEEK, default=0)
 
     class Meta:
         constraints = [
@@ -35,6 +35,7 @@ class Habits (models.Model):
 
 
 class Cheking (models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
     habit = models.ForeignKey(
         Habits, on_delete=models.CASCADE
     )
