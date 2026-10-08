@@ -26,7 +26,6 @@ router.register(r'cheking', ChekingViewSet, basename='cheking')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-
-
+    path('accounts/', include('accounts.urls')),
     path('api/', include(router.urls)),
 ]
