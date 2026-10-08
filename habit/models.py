@@ -16,9 +16,9 @@ DAYS_OF_WEEK = (
 
 class Habit(models.Model):
     class Frequency(models.TextChoices):
-        DAILY = 'DAILY', 'روزانه'
-        WEEKLY = 'WEEKLY', 'هفتگی'
-        MONTHLY = 'MONTHLY', 'ماهانه'
+        DAILY = 'DAILY'
+        WEEKLY = 'WEEKLY'
+        MONTHLY = 'MONTHLY'
 
     name = models.CharField(max_length=255)
     user = models.ForeignKey(
@@ -38,6 +38,33 @@ class Habit(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.frequency == self.Frequency.DAILY:
+            if not self.reminder_time:
+                raise ValidationError(
+                    'You must specify a time for daily habits.')
+            self.day_of_week = None
+            self.day_of_month = None
+
+        elif self.frequency == self.Frequency.WEEKLY:
+            if self.day_of_week is None:
+                raise ValidationError(
+                    'You must select a day of the week for weekly habits.')
+            self.reminder_time = None
+            self.day_of_month = None
+
+        elif self.frequency == self.Frequency.MONTHLY:
+            if not self.day_of_month:
+                raise ValidationError(
+                    'You must specify a day of the month for monthly habits.')
+            if not (1 <= self.day_of_month <= 31):
+                raise ValidationError(
+                    'The day of the month must be between 1 and 31.')
+            self.reminder_time = None
+            self.day_of_week = None
+
     class Meta:
         unique_together = [('user', 'name')]
         ordering = ['user', 'frequency']
@@ -54,6 +81,23 @@ class HabitCheck(models.Model):
     )
 
     checked_date = models.DateField(default=timezone.now)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        # Checking if the habit exists to avoid errors
+        if not hasattr(self, 'habit'):
+            return
+
+        if self.habit.frequency == 'WEEKLY':
+            if self.checked_date.weekday() != self.habit.day_of_week:
+                raise ValidationError(
+                    'This habit can only be checked on the selected day of the week.')
+
+        elif self.habit.frequency == 'MONTHLY':
+            if self.checked_date.day != self.habit.day_of_month:
+                raise ValidationError(
+                    'This habit can only be checked on the selected day of the month.')
 
     class Meta:
         unique_together = [('habit')]
