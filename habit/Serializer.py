@@ -1,14 +1,14 @@
 from rest_framework import serializers
-from .models import Habits, Cheking
+from .models import Habit, HabitCheck
 
 
 class HabitSerializers (serializers.ModelSerializer):
     class Meta:
-        model = Habits
-        fields = ['id', 'name', 'user', 'date', 'day_of_week']
+        model = Habit
+        fields = ['name', 'user', 'date', 'day_of_week', 'frequency']
         read_only_fields = ['user']
 
 
 class ChekingSerializers (serializers.ModelSerializer):
-    model = Cheking
-    fields = ['name', 'id']
+    model = HabitCheck
+    fields = ['name', 'checked_date']

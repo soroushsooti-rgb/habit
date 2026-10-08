@@ -1,6 +1,6 @@
-
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 DAYS_OF_WEEK = (
@@ -14,36 +14,50 @@ DAYS_OF_WEEK = (
 )
 
 
-class Habits (models.Model):
+class Habit(models.Model):
+    class Frequency(models.TextChoices):
+        DAILY = 'DAILY', 'روزانه'
+        WEEKLY = 'WEEKLY', 'هفتگی'
+        MONTHLY = 'MONTHLY', 'ماهانه'
+
     name = models.CharField(max_length=255)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    date = models.DateTimeField()
+    frequency = models.CharField(
+        max_length=10,
+        choices=Frequency.choices,
+        default=Frequency.DAILY,
+        verbose_name='loop'
+    )
     day_of_week = models.PositiveSmallIntegerField(
-        choices=DAYS_OF_WEEK, default=0)
+        choices=DAYS_OF_WEEK,
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'name'], name='habit_unique'),
-        ]
+        unique_together = [('user', 'name')]
+        ordering = ['user', 'frequency']
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.get_frequency_display()})"
 
 
-class Cheking (models.Model):
+class HabitCheck(models.Model):
     habit = models.ForeignKey(
-        Habits, on_delete=models.CASCADE
+        Habit,
+        on_delete=models.CASCADE,
+        related_name='checkings'
     )
 
+    checked_date = models.DateField(default=timezone.now)
+
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['habit'], name='cheking_unique'),
-        ]
+        unique_together = [('habit')]
+        ordering = ['-checked_date']
 
     def __str__(self):
-        return self.habit.name
+        return f"{self.habit.name} - {self.checked_date}"
