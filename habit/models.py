@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-
+from django.core.exceptions import ValidationError
 
 DAYS_OF_WEEK = (
     (0, 'Monday'),
@@ -36,11 +36,17 @@ class Habit(models.Model):
         null=True,
         blank=True,
     )
+    day_of_month = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+    )
+    reminder_time = models.TimeField(
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self):
-        from django.core.exceptions import ValidationError
-
         if self.frequency == self.Frequency.DAILY:
             if not self.reminder_time:
                 raise ValidationError(
@@ -79,28 +85,24 @@ class HabitCheck(models.Model):
         on_delete=models.CASCADE,
         related_name='checkings'
     )
-
     checked_date = models.DateField(default=timezone.now)
 
     def clean(self):
-        from django.core.exceptions import ValidationError
-
-        # Checking if the habit exists to avoid errors
         if not hasattr(self, 'habit'):
             return
 
-        if self.habit.frequency == 'WEEKLY':
+        if self.habit.frequency == Habit.Frequency.WEEKLY:
             if self.checked_date.weekday() != self.habit.day_of_week:
                 raise ValidationError(
                     'This habit can only be checked on the selected day of the week.')
 
-        elif self.habit.frequency == 'MONTHLY':
+        elif self.habit.frequency == Habit.Frequency.MONTHLY:
             if self.checked_date.day != self.habit.day_of_month:
                 raise ValidationError(
                     'This habit can only be checked on the selected day of the month.')
 
     class Meta:
-        unique_together = [('habit')]
+        unique_together = [('habit', 'checked_date')]
         ordering = ['-checked_date']
 
     def __str__(self):
