@@ -46,6 +46,8 @@ class Habit(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Habit Tracking Conditions
+
     def clean(self):
         if self.frequency == self.Frequency.DAILY:
             if not self.reminder_time:
@@ -55,6 +57,9 @@ class Habit(models.Model):
             self.day_of_month = None
 
         elif self.frequency == self.Frequency.WEEKLY:
+
+            # check cod mohamad
+
             if self.day_of_week is None:
                 raise ValidationError(
                     'You must select a day of the week for weekly habits.')
@@ -76,7 +81,7 @@ class Habit(models.Model):
         ordering = ['user', 'frequency']
 
     def __str__(self):
-        return f"{self.name} ({self.get_frequency_display()})"
+        return f"{self.name}"
 
 
 class HabitCheck(models.Model):
