@@ -49,6 +49,7 @@ class Habit(models.Model):
     # Habit Tracking Conditions
 
     def clean(self):
+        super().clean()
         if self.frequency == self.Frequency.DAILY:
             if not self.reminder_time:
                 raise ValidationError(
@@ -57,8 +58,6 @@ class Habit(models.Model):
             self.day_of_month = None
 
         elif self.frequency == self.Frequency.WEEKLY:
-
-            # check cod mohamad
 
             if self.day_of_week is None:
                 raise ValidationError(
@@ -76,8 +75,17 @@ class Habit(models.Model):
             self.reminder_time = None
             self.day_of_week = None
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     class Meta:
+
         unique_together = [('user', 'name')]
+        indexes = [
+            models.Index(fields=['user', 'name'],
+                         name='idx_habit_habit_date'),
+        ]
         ordering = ['user', 'frequency']
 
     def __str__(self):
@@ -93,6 +101,9 @@ class HabitCheck(models.Model):
     checked_date = models.DateField(default=timezone.now)
 
     def clean(self):
+
+        super().clean()
+
         if not hasattr(self, 'habit'):
             return
 
@@ -106,8 +117,16 @@ class HabitCheck(models.Model):
                 raise ValidationError(
                     'This habit can only be checked on the selected day of the month.')
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     class Meta:
         unique_together = [('habit', 'checked_date')]
+        indexes = [
+            models.Index(fields=['habit', 'checked_date'],
+                         name='idx_habit_checked_date'),
+        ]
         ordering = ['-checked_date']
 
     def __str__(self):
